@@ -85,25 +85,25 @@ function addRole() {
         type: 'list',
         name: 'roledepartment',
         message: 'What is the department?',
-        choices: [`Human Resources`, `Media`, `Engineering`, `English`, `Creative`,]
+        choices: `aDepartments
     }];
     inquirer.prompt(addRoleQs)
         .then(data => {
             if (data.rolename){
                 console.log (data.rolename,data.rolesalary, data.roledepartment)
+                const departmentId = aDepartments.findIndex(sDepartment=? sDepartment==data.roledepartment) + 1;
                 const sql = `INSERT INTO role (title, salary, department_id) VALUES (?,?,?)`;
-                const params = [data.rolename]
+                const params = [data.rolename, data.rolesalary, departmentId]
             
-                // db.query(sql, params, (err, rows) => {
-                //     if (err) {
-                //         console.log(err)
-                //         return;
-                //     }
-                //     console.log('');
-                //     console.log('the role has been added')
-                //     init()
-                // });
-                init();
+                db.query(sql, params, (err, rows) => {
+                if (err) {
+                console.log(err)
+                  return;
+                 }
+                console.log('');
+                console.log('the role has been added')
+                 init()
+                });
             }
         });
 
