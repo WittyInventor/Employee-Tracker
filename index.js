@@ -293,68 +293,66 @@ function viewEmployees() {
 // TODO: 1.) read all the roles available, 2.) do an inquirer to display which role will be updated
 // 3.) User will select the role title and find the role ID from that role title 4.) ask the user what is the role title, role salary and department name. 5.) then we have to update the role table for that role id
 function updateEmployeeRole() {
-    const sql = 'select id, title from role;';
+    // getting all employee names and ids
 
-    db.query(sql, (err, roleRows) => {
+    db.query('SELECT id,first_name, last_name FROM employee_Tracker_db.employee;',
+    // (err= means if there's an error then it returns an error, then 2nd argument employeeRows)
+    (err, employeeRows) => {
         if (err) {
             console.log(err)
             return;
         }
-        console.log('');
-        console.table(roleRows);
-        const roleNames = roleRows.map(
-            individualRole => {
+        const employeeNames = employeeRows.map (//get just the employee first and last name 
+        singleEmployee => {
+            return  singleEmployee.first_name + ' ' + singleEmployee.last_name
+        })
+        
+        // getting all role titles and id 
+        db.query('select id, title from role;',(err, roleRows)=> {
+            if (err) {
+                console.log(err)
+                return;
+            }
+        const roleNames = roleRows.map(individualRole => {
             return individualRole.title
-            });
+        });
 
-            const updateEmployeeRoleQs = [{
-                type: 'list',
-                name: 'roletitle',
-                message: 'Which employee role are you updating?',
-                choices: roleNames
-            }]
+        const updateEmployeeRoleQs = [{
+            type: 'list',
+            name: 'employeename',
+            message:'Which employee are you updating?',
+            choices: employeeNames
+        }]
+
+        
             inquirer.prompt(updateEmployeeRoleQs)
+            // asked to select an employee name to update
             .then(data => {
-                const updateroleId = roleRows.findIndex(singleRole => {
-                    return singleRole.title == data.roletitle
-                }) + 1;
-
-                db.query('SELECT id, name FROM employee_Tracker_db.department;', (err, rows) => {
-                    // (err = means if there is an error its the first argument, rows = the name of the data returned)
-                    if (err) {
-                        console.log(err)
-                        return;
-                    }
-                    console.log('');
-                    console.table(rows);
+                // get selected employee ID
+                
+                const updateEmployeeId = employeeRows.findIndex(singleEmployee => {
+                    return singleEmployee.first_name + " " + singleEmployee.last_name == data.employeename }) + 1;
+                   
                     const addupdateRoleQs = [{
-                        type: 'input',
-                        name: 'rolename',
-                        message: 'What is the new role title?',
-                    }, {
-                        type: 'input',
-                        name: 'rolesalary',
-                        message: 'What is the new role salary?',
-                    },
-                    {
                         type: 'list',
-                        name: 'roledepartment',
-                        message: 'What is the department?',
-                        choices: rows
+                        name: 'rolename',
+                        message: 'What is the new role of the employee?',
+                        choices: roleNames
                     }];
             
                     inquirer.prompt(addupdateRoleQs)
+                    // ask what is the employee new role title
                         .then(data => {
-                          
-                            if (data.rolename) {
-                             
-                                const departmentId = rows.findIndex(sDepartment => {                                   
-                                    return sDepartment.name == data.roledepartment
-                                }) + 1;
+                            // get selected role id below
+                                const roleSelected = roleRows.find(singleRole => {
+                                    return singleRole.title == data.rolename
+                                });
+                                    
+                                 // update employee table
                                 
-                                const sql = `update employee_Tracker_db.role
-                                SET title = ?, salary = ?, department_id = ? where id= ?;`;
-                                const params = [data.rolename, data.rolesalary, departmentId, updateroleId]
+                                const sql = 'update employee_Tracker_db.employee SET role_id = ? where id = ?;'; 
+                                // this line above const sql is declaring the sql variable query that wil run inside database. 
+                                const params = [roleSelected.id, updateEmployeeId]
             
                                 db.query(sql, params, (err, rows) => {
                                     if (err) {
@@ -362,17 +360,15 @@ function updateEmployeeRole() {
                                         return;
                                     }
                                     console.log('');
-                                    console.log('the role has been updated')
+                                    console.log('the employee role has been updated')
                                     init()
                                 });
-                            }
+                            });
                         });
+                    });
                 });
-            
 
 
-            });   
-    });
 }
 // init means that its running the function earlier
 
